@@ -1,0 +1,14 @@
+/.vs
+**/Migrations/
+*.dll
+*.pdb
+*.cache
+*.json
+*pubxml.user
+*csproj.user
+!launchSettings.json
+!serviceDependencies.json
+!serviceDependencies.local.json
+bin/
+obj/
+Images/
