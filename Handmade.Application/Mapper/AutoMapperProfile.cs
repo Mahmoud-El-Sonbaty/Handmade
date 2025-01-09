@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Handmade.DTOs.ProductReviewDTOs;
+using Handmade.Models;
 
 namespace Handmade.Application.Mapper
 {
@@ -12,6 +14,10 @@ namespace Handmade.Application.Mapper
             //CreateMap<GetOneCategoryDTO, Category>().ReverseMap();
             //CreateMap<GetAllBookAuthorDTO, BookAuthor>().ReverseMap()
             //    .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author.Name));
+            #endregion
+
+            #region ProductReview
+            CreateMap<GCUProductReviewDTO, ProductReview>().ReverseMap();
             #endregion
         }
     }
