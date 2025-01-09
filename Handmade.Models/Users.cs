@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Handmade.Models
 {
-    public class Users : IdentityUser<int>
+    public class User : IdentityUser<int>
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
