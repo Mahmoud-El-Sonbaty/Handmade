@@ -9,7 +9,7 @@ namespace Handmade.Context
     //{
     //    public HandmadeContext(DbContextOptions<HandmadeContext> options) : base(options) { }
     //}
-    public class HandmadeContext(DbContextOptions<HandmadeContext> options) : IdentityDbContext<Users, IdentityRole<int>, int>(options)
+    public class HandmadeContext(DbContextOptions<HandmadeContext> options) : IdentityDbContext<User, IdentityRole<int>, int>(options)
     {
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

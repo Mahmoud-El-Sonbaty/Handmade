@@ -19,12 +19,12 @@ namespace Handmade.Infrastructure
 
         public async Task<TEntity> CreateAsync(TEntity Entity) => (await _dbset.AddAsync(Entity)).Entity;
 
+        public Task<TEntity> UpdateAsync(TEntity Entity) => Task.FromResult(_dbset.Update(Entity).Entity);
+
         public Task<TEntity> DeleteAsync(TEntity Entity) => Task.FromResult(_dbset.Remove(Entity).Entity);
 
         public Task<IQueryable<TEntity>> GetAllAsync() => Task.FromResult(_dbset.AsQueryable());
 
         public Task<int> SaveChangesAsync() => context.SaveChangesAsync();
-
-        public Task<TEntity> UpdateAsync(TEntity Entity) => Task.FromResult(_dbset.Update(Entity).Entity);
     }
 }
