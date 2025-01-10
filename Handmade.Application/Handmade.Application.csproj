@@ -10,4 +10,9 @@
     <PackageReference Include="AutoMapper" Version="13.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Handmade.DTOs\Handmade.DTOs.csproj" />
+    <ProjectReference Include="..\Handmade.Models\Handmade.Models.csproj" />
+  </ItemGroup>
+
 </Project>
