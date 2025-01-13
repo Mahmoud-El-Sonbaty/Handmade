@@ -7,14 +7,9 @@ using Handmade.Models;
 
 namespace Handmade.Application.Services.CategoryServices
 {
-    public class CategoryService(ICatogoryRepository CatogoryRepository, IMapper _mapper) : ICategoryService
+    public class CategoryService(ICatogoryRepository catogoryRepository, IMapper mapper) : ICategoryService
     {
-        private readonly ICatogoryRepository catogoryRepository = CatogoryRepository;
-        private readonly IMapper mapper = _mapper;
-
-       
-
-
+        
         // CRUD Operation
 
         public async Task<ResultView<CRUDCategoriesDTO>> CreateCategoryAsync(CRUDCategoriesDTO CategoryDTO)
@@ -132,17 +127,75 @@ namespace Handmade.Application.Services.CategoryServices
         // Get All & Get one 
         public async Task<ResultView<List<GetAllCategoriesDTO>>> GetAllCategoriesAsync()
         {
+            try
+            {
+                List<Category> categories = [.. (await catogoryRepository.GetAllAsync()).Where(a => a.IsDeleted != true)];
+                if( categories==null)
+                {
+                    return new ResultView<List<GetAllCategoriesDTO>> {  IsSuccess = false ,Msg="Non Categories Found!" };
 
+                }
+                List<GetAllCategoriesDTO> result = mapper.Map<List<GetAllCategoriesDTO>>(categories);
+                return new ResultView<List<GetAllCategoriesDTO>> { Data = result, IsSuccess = true };
+            }
+            catch (Exception ex)
+            {
+                return new ResultView<List<GetAllCategoriesDTO>> { IsSuccess = false, Msg = ex.Message };
+            }
         }
 
-        public Task<ResultView<GetOneCategoryDTO>> GetOneCategoryByIdAsync(int id)
+        public async Task<ResultView<GetOneCategoryDTO>> GetOneCategoryByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            
+            try
+            {
+                Category categories = (await catogoryRepository.GetAllAsync()).FirstOrDefault(c => c.Id == id && !c.IsDeleted);
+                if (categories is not null)
+                {
+                    GetOneCategoryDTO result = mapper.Map<GetOneCategoryDTO>(categories);
+                    return new ResultView<GetOneCategoryDTO> { Data = result, IsSuccess = true ,Msg=$"Get {result.Name} Category Succssfully" };
+                    
+                }
+                else
+                {
+                 return new ResultView<GetOneCategoryDTO> { IsSuccess = false, Msg = "Category Not Found!" };
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ResultView<GetOneCategoryDTO> { IsSuccess = false, Msg = $"Error Happen While find Category " + ex.Message };
+            }
         }
 
-        public Task<ResultView<EntityPaginated<GetAllCategoriesDTO>>> GetPaginatedAsync(int pageNubmer, int pageSize)
+        public async Task<ResultView<EntityPaginated<GetAllCategoriesDTO>>> GetPaginatedAsync(int pageNubmer, int pageSize)
         {
-            throw new NotImplementedException();
+            ResultView<EntityPaginated<GetAllCategoriesDTO>> resultView = new();
+            try
+            {
+                List<Category> categories = [.. (await catogoryRepository.GetAllAsync()).Where(a => a.IsDeleted != true)
+                    .OrderByDescending(c => c.CreatedAt)
+                    .Skip((pageNubmer - 1) * pageSize)
+                    .Take(pageSize)];
+
+                List<GetAllCategoriesDTO> categoryDTOs = mapper.Map<List<GetAllCategoriesDTO>>(categories);
+                int totalCategories = (await catogoryRepository.GetAllAsync()).Count(a => !a.IsDeleted);
+
+                resultView.IsSuccess = true;
+                resultView.Data = new EntityPaginated<GetAllCategoriesDTO>
+                {
+                    Data = categoryDTOs,
+                    Count = totalCategories
+                };
+                resultView.Msg = "All Categories Fetched Successfully";
+            }
+            catch (Exception ex)
+            {
+                resultView.IsSuccess = false;
+                resultView.Data = null;
+                resultView.Msg = $"Error Happened While Fetching All Categories {ex.Message}";
+            }
+            return resultView;
         }
 
     }
