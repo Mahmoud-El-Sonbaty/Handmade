@@ -15,6 +15,7 @@ namespace Handmade.DTOs.CategoryDTOs
         public int ParentCategoryId { get; set; }
         public int Level { get; set; }
         public string? CatogorylogoPath { get; set; }
+        public List<GetOneCategoryDTO>? Children { get; set; }
 
     }
 }

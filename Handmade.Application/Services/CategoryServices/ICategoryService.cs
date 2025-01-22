@@ -12,10 +12,11 @@ namespace Handmade.Application.Services.CategoryServices
     {
         Task<ResultView<CRUDCategoriesDTO>> CreateCategoryAsync(CRUDCategoriesDTO CategoryDTO);
         Task<ResultView<CRUDCategoriesDTO>> UpdateCategoryAsync(CRUDCategoriesDTO CategoryDTO);
-        Task<ResultView<CRUDCategoriesDTO>> DeleteCategoryAsync(int id);
-        Task<ResultView<List<GetAllCategoriesDTO>>> GetAllCategoriesAsync();
-        Task<ResultView<GetOneCategoryDTO>> GetOneCategoryByIdAsync(int id);
-        Task<ResultView<EntityPaginated<GetAllCategoriesDTO>>> GetPaginatedAsync(int pageNubmer, int pageSize);
+        Task<ResultView<CRUDCategoriesDTO>> DeleteCategoryAsync(int id,string lang);
+        Task<ResultView<List<GetAllCategoriesDTO>>> GetAllCategoriesAsync(string lang);
+        Task<ResultView<GetOneCategoryDTO>> GetOneCategoryByIdAsync(int id , string lang,bool WithCild=false); 
+        Task<ResultView<List<GetOneCategoryDTO>>> GetTheCategoriesByParentIdAsync(int id , string lang,bool WithCild=false);
+        Task<ResultView<EntityPaginated<GetAllCategoriesDTO>>> GetPaginatedAsync(int pageNubmer, int pageSize ,string lang);
 
     }
 }
