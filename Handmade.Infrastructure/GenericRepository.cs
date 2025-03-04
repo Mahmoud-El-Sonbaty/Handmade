@@ -3,6 +3,7 @@ using Handmade.Context;
 using Handmade.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Handmade.Infrastructure
 {
@@ -25,6 +26,23 @@ namespace Handmade.Infrastructure
 
         public Task<IQueryable<TEntity>> GetAllAsync() => Task.FromResult(_dbset.AsQueryable());
 
+        public async ValueTask<TEntity> GetOneAsync(TId id)
+        {
+            var entity = await _dbset.FindAsync(id);
+            return entity != null && !entity.IsDeleted ? entity : null;
+        }
+
         public Task<int> SaveChangesAsync() => context.SaveChangesAsync();
+        public async Task<IQueryable<TEntity>> GetSortedFilterAsync<TKey>(Expression<Func<TEntity, TKey>> orderBy, Expression<Func<TEntity, bool>> searchPredicate = null, bool ascending = true)
+        {
+            var query = _dbset.AsQueryable();
+            query = query.Where(p => !p.IsDeleted);
+            if (searchPredicate != null)
+            {
+                query = query.Where(searchPredicate);
+            }
+            query = ascending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
+            return await Task.FromResult(query.Any() ? query : Enumerable.Empty<TEntity>().AsQueryable());
+        }
     }
 }
