@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Handmade.DTOs.BrandDTOs;
 using Handmade.DTOs.ProductReviewDTOs;
 using Handmade.Models;
 
@@ -19,6 +20,12 @@ namespace Handmade.Application.Mapper
             #region ProductReview
             CreateMap<GCUProductReviewDTO, ProductReview>().ReverseMap();
             #endregion
+
+            CreateMap<Brand, BrandDTO>().ReverseMap();
+            CreateMap<Brand, CreateBrandDTO>().ReverseMap();
+            CreateMap<BrandDTO, CreateBrandDTO>().ReverseMap();
+
+
         }
     }
 }
