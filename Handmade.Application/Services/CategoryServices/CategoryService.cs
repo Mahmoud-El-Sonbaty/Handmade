@@ -132,6 +132,7 @@ namespace Handmade.Application.Services.CategoryServices
         // Get All & Get one 
         public async Task<ResultView<List<GetAllCategoriesDTO>>> GetAllCategoriesAsync()
         {
+            throw new NotImplementedException();
 
         }
 

@@ -9,9 +9,10 @@ namespace Handmade.Infrastructure
     public class GenericRepository<TEntity, TId>(HandmadeContext context) : IGenericRepository<TEntity, TId> where TEntity : BaseEntity<TId>
     {
         private readonly DbSet<TEntity> _dbset = context.Set<TEntity>();
+        private readonly HandmadeContext _context;
 
-        // we used primary constructor instead of the reqular one like below
-        //public GenericRepository(HandmadeContext context)
+        ////we used primary constructor instead of the reqular one like below
+        // public GenericRepository(HandmadeContext context)
         //{
         //    _context = context;
         //    _dbset = context.Set<TEntity>();

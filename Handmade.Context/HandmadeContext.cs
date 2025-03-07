@@ -1,4 +1,5 @@
 ﻿using Handmade.Models;
+using Handmade.Models.ProductH;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,12 @@ namespace Handmade.Context
                 new IdentityRole<int> { Id = 4, Name = "Buyer", NormalizedName = "BUYER" }
             );
         }
+
+        public DbSet<Product> Products { get; set; }  
+        public DbSet<ProductImage> productImages { get; set; }
+        public DbSet<ProductTag> productTags { get; set; }
+        public DbSet<ProductTagMappingH> productTagMappingHs { get; set; }
+
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             var entities = ChangeTracker.Entries<BaseEntity<int>>();
