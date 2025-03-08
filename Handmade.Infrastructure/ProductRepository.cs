@@ -45,9 +45,9 @@ namespace Handmade.Infrastructure
 
      
 
-        public async Task<ICollection<Product>> GetAllAsync()
+        public async Task<IQueryable<Product>> GetAllAsync()
         {
-            return _context.Products.ToList();
+            return _context.Products.AsQueryable();
         }
 
         public async Task<Product> GetByNameAsync(string name)

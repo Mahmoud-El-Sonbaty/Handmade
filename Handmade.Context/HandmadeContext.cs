@@ -27,7 +27,7 @@ namespace Handmade.Context
         public DbSet<Product> Products { get; set; }  
         public DbSet<ProductImage> productImages { get; set; }
         public DbSet<ProductTag> productTags { get; set; }
-        public DbSet<ProductTagMappingH> productTagMappingHs { get; set; }
+        public DbSet<ProductTagMapping> productTagMappingHs { get; set; }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {

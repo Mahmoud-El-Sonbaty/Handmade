@@ -12,12 +12,12 @@ namespace Handmade.Application.Services.Products
 {
     public interface IproductService 
     {
-        Task<ResultView<ProductDTOs>> CreateProductAsync(ProductDTOs entity);
-        Task<ResultView<ProductDTOs>> DeleteProductAsync(ProductDTOs entity);
+        Task<ResultView<CRUDProductDTOs>> CreateProductAsync(CRUDProductDTOs entity);
+        Task<ResultView<CRUDProductDTOs>> DeleteProductAsync(CRUDProductDTOs entity);
         Task<ResultView<ICollection<GetAllProductsDTOs>>> GetAllProductAsync();
-        Task<ResultView<ICollection<ProductDTOs>>> GetByNameAsync(string name);
+        Task<ResultView<ICollection<CRUDProductDTOs>>> GetByNameAsync(string name);
         Task<ResultView<ICollection<GetAllProductsDTOs>>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice);
-        Task<ResultView<ProductDTOs>> UpdateProductAsync(ProductDTOs entity);
+        Task<ResultView<CRUDProductDTOs>> UpdateProductAsync(CRUDProductDTOs entity);
         Task<ResultView<GetOneProductDTOs>> GetProductByIdAsync(int id); // resultView is wrapper class
         Task<ResultView<EntityPaginated<GetOneProductDTOs>>> GetPaginatedAsync(int pageNubmer, int pageSize);
 

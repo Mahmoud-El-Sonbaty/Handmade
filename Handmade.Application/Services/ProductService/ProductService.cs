@@ -25,24 +25,24 @@ namespace Handmade.Application.Services.Products
 
       
 
-        public async Task<ResultView<ProductDTOs>> CreateProductAsync(ProductDTOs productDTO)
+        public async Task<ResultView<CRUDProductDTOs>> CreateProductAsync(CRUDProductDTOs productDTO)
         {
           
                 var product = _mapper.Map<Product>(productDTO);
                 var created = await _productRepository.CreateAsync(product);
                 await _productRepository.SaveChangesAsync();
-                var result = _mapper.Map<ProductDTOs>(created);
-                return new ResultView<ProductDTOs> { Data = result, IsSuccess = true };
+                var result = _mapper.Map<CRUDProductDTOs>(created);
+                return new ResultView<CRUDProductDTOs> { Data = result, IsSuccess = true };
 
             }
 
-      public  async Task<ResultView<ProductDTOs>> DeleteProductAsync(ProductDTOs entity)
+      public  async Task<ResultView<CRUDProductDTOs>> DeleteProductAsync(CRUDProductDTOs entity)
         {
             var Product = _mapper.Map<Product>(entity);
             var Deleted = _productRepository.DeleteAsync(Product);
             await _productRepository.SaveChangesAsync();
-            var result = _mapper.Map<ProductDTOs>(Deleted);
-            return new ResultView<ProductDTOs> { Data = result, IsSuccess = true };
+            var result = _mapper.Map<CRUDProductDTOs>(Deleted);
+            return new ResultView<CRUDProductDTOs> { Data = result, IsSuccess = true };
         }
 
 
@@ -54,25 +54,25 @@ namespace Handmade.Application.Services.Products
    
         }
 
-        public async Task<ResultView<ICollection<ProductDTOs>>> GetByNameAsync(string name)
+        public async Task<ResultView<ICollection<CRUDProductDTOs>>> GetByNameAsync(string name)
         {
             var book = await _productRepository.GetAllAsync();
             var search = book
                  .Where(b => b.Name.Contains(name, StringComparison.OrdinalIgnoreCase)) //تحدد الاحرف   ان كانت حساسه ا 
                  .ToList();
-            var result = _mapper.Map<ICollection<ProductDTOs>>(search);
+            var result = _mapper.Map<ICollection<CRUDProductDTOs>>(search);
 
-            return new ResultView<ICollection<ProductDTOs>> { Data = result, IsSuccess = true }; ;
+            return new ResultView<ICollection<CRUDProductDTOs>> { Data = result, IsSuccess = true }; ;
 
         }
 
-       public async Task<ResultView<ProductDTOs>> UpdateProductAsync(ProductDTOs entity)
+       public async Task<ResultView<CRUDProductDTOs>> UpdateProductAsync(CRUDProductDTOs entity)
         {
             var product = _mapper.Map<Product>(entity);
             var updated = _productRepository.UpdateAsync(product);
             await _productRepository.SaveChangesAsync();
-            var result = _mapper.Map<ProductDTOs>(updated);
-            return new ResultView<ProductDTOs> { Data = result, IsSuccess = true };
+            var result = _mapper.Map<CRUDProductDTOs>(updated);
+            return new ResultView<CRUDProductDTOs> { Data = result, IsSuccess = true };
         }
 
       public async Task<ResultView<ICollection<GetAllProductsDTOs>>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)
@@ -96,11 +96,10 @@ namespace Handmade.Application.Services.Products
 
         public async Task<ResultView<EntityPaginated<GetOneProductDTOs>>> GetPaginatedAsync(int pageNumber, int pageSize)
         {
-           
-
             var products = await _productRepository.GetAllAsync();
 
-            int totalCount = products.Count;
+            var count = products.Count();
+            int totalCount = count;
 
             int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 

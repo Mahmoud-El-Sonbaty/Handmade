@@ -24,14 +24,15 @@ namespace Handmade.Models.ProductH
         //public ICollection<OrderItemB> OrderItems { get; set; }
         //public ICollection<ProductSpecificationsB> Specifications { get; set; }
         //public ICollection<ProductTranslationB> Translations { get; set; }
+     public List<ProductTagMapping> ProductTagMappings { get; set; } = new List<ProductTagMapping>();
 
 
 
 
-      
- 
-   
+
+
+
     }
 
-    }
+}
 

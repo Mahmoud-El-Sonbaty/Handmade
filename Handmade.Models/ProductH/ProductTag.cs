@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Handmade.Models.ProductH
 {
-   public class ProductTagMappingH
+    public class ProductTag
     {
-        public int ProductID { get; set; } 
-        public Product Product { get; set; }
-
         public int TagID { get; set; }
-        public ProductTag ProductTag { get; set; }
+        public string TagName { get; set; } = string.Empty;
+
+        public List<ProductTagMapping> ProductTagMappings { get; set; } = new List<ProductTagMapping>();
     }
+
 }

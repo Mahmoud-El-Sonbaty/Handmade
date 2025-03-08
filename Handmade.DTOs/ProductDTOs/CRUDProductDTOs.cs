@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Handmade.DTOs.ProductTagsDTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Handmade.DTOs.ProductDTOs
 {
-     public class ProductDTOs
+     public class CRUDProductDTOs
     {
         public int Id { get; set; }
 
@@ -16,5 +17,7 @@ namespace Handmade.DTOs.ProductDTOs
         public decimal? Price { get; set; }
         public int StockQuantity { get; set; }
         public List<string> Images { get; set; }
+        public List<CRUDProductTagDTOs> Tags { get; set; } = new List<CRUDProductTagDTOs>();
+
     }
 }

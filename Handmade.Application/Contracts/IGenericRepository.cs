@@ -7,7 +7,7 @@
         public Task<TEntity> CreateAsync(TEntity Entity);
         public Task<TEntity> UpdateAsync(TEntity Entity);
         public Task<TEntity> DeleteAsync(TEntity Entity);
-        public Task<ICollection<TEntity>> GetAllAsync();
+        public Task<IQueryable<TEntity>> GetAllAsync();
 
         public Task<int> SaveChangesAsync();
     }
