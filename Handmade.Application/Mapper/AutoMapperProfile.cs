@@ -5,6 +5,7 @@ using Handmade.Models;
 using Handmade.Models.ProductH;
 using Handmade.DTOs.ProductImagesDTOs;
 using Handmade.DTOs.ProductTagsDTOs;
+using Handmade.DTOs.CouponsDTOs;
 
 namespace Handmade.Application.Mapper
 {
@@ -28,7 +29,7 @@ namespace Handmade.Application.Mapper
             CreateMap<GetAllProductsDTOs, Product>().ReverseMap();
             CreateMap<GetOneProductDTOs, Product>().ReverseMap();
             CreateMap<Product, CRUDProductDTOs>().ReverseMap()
-             .ForMember(dest => dest.tags, opt => opt.MapFrom(src => src.Tags.Select(ptm => ptm.TagName)));
+             .ForMember(dest => dest.ProductTagMappings, opt => opt.MapFrom(src => src.Tags.Select(ptm => ptm.TagName)));
             #endregion
 
             #region ProductImage
@@ -41,7 +42,13 @@ namespace Handmade.Application.Mapper
             #endregion
 
             #region ProductTagMapping
-            CreateMap<ProductTagMapping, ProductTagMappingDTO>();
+            CreateMap<ProductTagMapping, ProductTagMappingDTO>().ReverseMap();
+            #endregion
+
+            #region Coupon 
+            CreateMap<CRUDCouponDTO, Coupon>().ReverseMap();
+            CreateMap<UpdateCouponDTO, Coupon>().ReverseMap();
+            CreateMap<CreateCouponDTO, Coupon>().ReverseMap();
             #endregion
         }
     }

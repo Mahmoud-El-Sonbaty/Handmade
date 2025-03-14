@@ -29,6 +29,12 @@ namespace Handmade.Context
         public DbSet<ProductTag> productTags { get; set; }
         public DbSet<ProductTagMapping> productTagMappingHs { get; set; }
 
+        public DbSet<Coupon> Coupons { get; set; }
+        public DbSet<CouponUsage> CouponUsages { get; set; }
+        public DbSet<Refund> Refunds { get; set; }
+
+
+
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             var entities = ChangeTracker.Entries<BaseEntity<int>>();

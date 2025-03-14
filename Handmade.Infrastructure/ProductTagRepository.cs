@@ -39,6 +39,12 @@ namespace Handmade.Infrastructure
             return _dbSet.AsQueryable();
         }
 
+        public async Task<ProductTag> GetByIdAsync(int id)
+        {
+            var result =  await _dbSet.FindAsync(id);
+            return result;
+        }
+
         public Task<int> SaveChangesAsync()
         {
             return _context.SaveChangesAsync();

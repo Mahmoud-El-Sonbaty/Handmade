@@ -1,4 +1,4 @@
-﻿using Handmade.Models.ProductH;
+﻿using Handmade.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Handmade.Application.Contracts
 {
-    public interface IProductTagRepository : IGenericRepository<ProductTag, int>
+    public interface ICouponUsageRepository : IGenericRepository<CouponUsage,int>
     {
-        public Task<ProductTag> GetByIdAsync(int id);
+        public Task<Coupon> GetByID(int id);
 
     }
 }
