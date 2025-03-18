@@ -1,4 +1,6 @@
-﻿namespace Handmade.Application.Contracts
+﻿using System.Linq.Expressions;
+
+namespace Handmade.Application.Contracts
 {
     public interface IGenericRepository<TEntity, TId>
     {
@@ -9,6 +11,10 @@
         public Task<TEntity> DeleteAsync(TEntity Entity);
         public Task<IQueryable<TEntity>> GetAllAsync();
 
+        public ValueTask<TEntity> GetOneAsync(TId id);
+
         public Task<int> SaveChangesAsync();
+        public Task<IQueryable<TEntity>> GetSortedFilterAsync<TKey>(Expression<Func<TEntity, TKey>> orderBy, Expression<Func<TEntity, bool>> searchPredicate = null, bool ascending = true);
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Handmade.DTOs.BrandDTOs;
 using Handmade.DTOs.ProductReviewDTOs;
 using Handmade.DTOs.ProductDTOs;
 using Handmade.Models;
@@ -50,6 +51,12 @@ namespace Handmade.Application.Mapper
             CreateMap<UpdateCouponDTO, Coupon>().ReverseMap();
             CreateMap<CreateCouponDTO, Coupon>().ReverseMap();
             #endregion
+
+            CreateMap<Brand, BrandDTO>().ReverseMap();
+            CreateMap<Brand, CreateBrandDTO>().ReverseMap();
+            CreateMap<BrandDTO, CreateBrandDTO>().ReverseMap();
+
+
         }
     }
 }
