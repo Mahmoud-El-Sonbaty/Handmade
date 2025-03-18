@@ -10,7 +10,9 @@ namespace Handmade.Application.Contracts
         public Task<TEntity> UpdateAsync(TEntity Entity);
         public Task<TEntity> DeleteAsync(TEntity Entity);
         public Task<IQueryable<TEntity>> GetAllAsync();
+
         public ValueTask<TEntity> GetOneAsync(TId id);
+
         public Task<int> SaveChangesAsync();
         public Task<IQueryable<TEntity>> GetSortedFilterAsync<TKey>(Expression<Func<TEntity, TKey>> orderBy, Expression<Func<TEntity, bool>> searchPredicate = null, bool ascending = true);
 
