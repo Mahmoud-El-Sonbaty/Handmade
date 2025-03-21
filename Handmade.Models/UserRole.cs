@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Handmade.Models
 {
-    public class User : IdentityUser<int>
+    public class UserRole : IdentityUserRole<int>
     {
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
+        public IdentityRole<int>? Role { get; set; }
+        public User User { get; set; }
     }
 }

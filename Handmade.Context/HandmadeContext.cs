@@ -6,10 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Handmade.Context
 {
-    //public class HandmadeContext : IdentityDbContext<CustomUser, IdentityRole<int>, int>
-    //{
-    //    public HandmadeContext(DbContextOptions<HandmadeContext> options) : base(options) { }
-    //}
     public class HandmadeContext(DbContextOptions<HandmadeContext> options) : IdentityDbContext<User, IdentityRole<int>, int>(options)
     {
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,7 +24,8 @@ namespace Handmade.Context
         public DbSet<ProductImage> productImages { get; set; }
         public DbSet<ProductTag> productTags { get; set; }
         public DbSet<ProductTagMapping> productTagMappingHs { get; set; }
-
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
         public DbSet<CouponUsage> CouponUsages { get; set; }
         public DbSet<Refund> Refunds { get; set; }
