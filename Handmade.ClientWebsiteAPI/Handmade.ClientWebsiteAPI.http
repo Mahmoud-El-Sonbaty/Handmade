@@ -1,0 +1,6 @@
+@Handmade.ClientWebsiteAPI_HostAddress = http://localhost:5127
+
+GET {{Handmade.ClientWebsiteAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
