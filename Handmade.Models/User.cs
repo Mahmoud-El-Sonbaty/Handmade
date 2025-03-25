@@ -11,7 +11,8 @@ namespace Handmade.Models
     public class User : IdentityUser<int>
     {
         [MaxLength(20)]
-        public string? FirstName { get; set; }
+        [Required(ErrorMessage = "First Name is required.")]
+        public required string FirstName { get; set; }
 
         [MaxLength(20)]
         public string? LastName { get; set; }
@@ -21,6 +22,6 @@ namespace Handmade.Models
 
         [MaxLength(1000)]
         public string? ImageUrl { get; set; }
-        public virtual ICollection<UserRole>? Roles { get; set; }
+        public virtual ICollection<UserRole>? UserRoles { get; set; }
     }
 }

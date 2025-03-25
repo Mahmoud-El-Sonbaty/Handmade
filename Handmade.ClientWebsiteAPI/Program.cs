@@ -1,3 +1,4 @@
+using Handmade.Application.Mapper;
 using Handmade.Application.Services.AuthServices;
 using Handmade.Application.Services.CloudinaryServices;
 using Handmade.Application.Services.EmailServices;
@@ -5,6 +6,7 @@ using Handmade.Context;
 using Handmade.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
@@ -18,7 +20,11 @@ namespace Handmade.ClientWebsiteAPI
             var builder = WebApplication.CreateBuilder(args);
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<HandmadeContext>();
+            builder.Services.AddDbContext<HandmadeContext>(op => 
+            op.UseNpgsql(connectionString));
+            //builder.Services.AddMapster();
+            // Configure Mapster
+            MapsterConfig.Configure();
             // Register PasswordRequirementsConfig as IPasswordRequirementsConfig
             //builder.Services.Configure<IPasswordRequirementsConfig>(builder.Configuration.GetSection("PasswordRequirements"));
             //builder.Services.AddSingleton<PasswordValidationAttribute>();
@@ -30,13 +36,13 @@ namespace Handmade.ClientWebsiteAPI
 
             builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
             {
-                options.SignIn.RequireConfirmedEmail = true;
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
-                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = builder.Configuration.GetValue<bool>("PasswordRequirements:RequireConfirmedEmail");
+                options.Password.RequireDigit = builder.Configuration.GetValue<bool>("PasswordRequirements:RequireDigit");
+                options.Password.RequiredLength = builder.Configuration.GetValue<int>("PasswordRequirements:MinimumLength");
+                options.Password.RequireNonAlphanumeric = builder.Configuration.GetValue<bool>("PasswordRequirements:RequireSpecialCharacter");
+                options.Password.RequireUppercase = builder.Configuration.GetValue<bool>("PasswordRequirements:RequireUppercase");
+                options.Password.RequireLowercase = builder.Configuration.GetValue<bool>("PasswordRequirements:RequireLowercase");
+                options.User.RequireUniqueEmail = builder.Configuration.GetValue<bool>("PasswordRequirements:RequireUniqueEmail");
             })
             .AddRoles<IdentityRole<int>>()
             .AddEntityFrameworkStores<HandmadeContext>();

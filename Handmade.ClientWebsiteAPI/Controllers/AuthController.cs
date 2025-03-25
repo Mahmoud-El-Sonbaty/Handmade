@@ -1,6 +1,7 @@
 ﻿using Handmade.Application.Services.AuthServices;
+using Handmade.DTOs.AuthDTOs;
 using Handmade.DTOs.SharedDTOs;
-using Handmade.DTOs.UserDTOs;
+using Handmade.DTOs.AuthDTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,22 +13,22 @@ namespace Handmade.ClientWebsiteAPI.Controllers
     {
         private readonly IAuthService _authService = authService;
 
-        [HttpPost("Client-Register")]
-        public async Task<IActionResult> ClientRegister(ClientRegisterDTO clientRegisterDTO)
+        [HttpPost("buyer-register")]
+        public async Task<IActionResult> BuyerRegister(ClientRegisterDTO clientRegisterDTO)
         {
             if (ModelState.IsValid)
             {
-                ResultView<ClientRegisterDTO> registerResult = await _authService.ClientRegisterAsync(clientRegisterDTO);
+                ResultView<string> registerResult = await _authService.SendVerificationEmailAsync(clientRegisterDTO, "Buyer");
                 if (registerResult.IsSuccess)
                 {
-                    return Created();
+                    return Ok(registerResult);
                 }
                 return BadRequest(registerResult.Msg);
             }
             return BadRequest(ModelState.ErrorCount);
         }
 
-        [HttpPost("Seller-Login")]
+        [HttpPost("seller-login")]
         public async Task<IActionResult> SellerLogin(UserLoginDTO userLoginDTO)
         {
             ResultView<LoginResultDTO> loginResult = await _authService.SellerLoginAsync(userLoginDTO);
@@ -37,21 +38,37 @@ namespace Handmade.ClientWebsiteAPI.Controllers
             }
             else
             {
-                return BadRequest(loginResult.Msg);
+                return BadRequest(loginResult);
             }
         }
 
-        [HttpPost("Client-Login")]
-        public async Task<IActionResult> ClientLogin(UserLoginDTO userLoginDTO)
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromQuery] string token)
         {
-            ResultView<LoginResultDTO> loginResult = await _authService.ClientLoginAsync(userLoginDTO);
+            Console.WriteLine(token);
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrEmpty(token))
+            {
+                return BadRequest("Invalid Token.");
+            }
+            ResultView<LoginResultDTO> loginResultDTO = await _authService.CreateUserAsync(token);
+            if (loginResultDTO.IsSuccess)
+            {
+                return Ok(loginResultDTO);
+            }
+            return BadRequest(loginResultDTO);
+        }
+
+        [HttpPost("buyer-login")]
+        public async Task<IActionResult> BuyerLogin(UserLoginDTO userLoginDTO)
+        {
+            ResultView<LoginResultDTO> loginResult = await _authService.BuyerLoginAsync(userLoginDTO);
             if (loginResult.IsSuccess)
             {
                 return Accepted(loginResult);
             }
             else
             {
-                return BadRequest(loginResult.Msg);
+                return BadRequest(loginResult);
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿using Handmade.DTOs.SharedDTOs;
-using Handmade.DTOs.UserDTOs;
+using Handmade.DTOs.AuthDTOs;
 using Handmade.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Text;
@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Handmade.Application.Services.EmailServices;
+using Mapster;
 
 namespace Handmade.Application.Services.AuthServices
 {
@@ -23,7 +24,130 @@ namespace Handmade.Application.Services.AuthServices
         private readonly UserManager<User> _userManager = userManager;
         private readonly SignInManager<User> _signInManager = signInManager;
         private readonly ILogger<AuthService> _logger = logger;
+        //private readonly IMapper _mapper = mapper; IMapper mapper,
         private readonly RoleManager<IdentityRole<int>> _roleManager = roleManager;
+
+        public async Task<ResultView<string>> SendVerificationEmailAsync(ClientRegisterDTO clientRegisterDTO, string role)
+        {
+            ResultView<string> result = new();
+            try
+            {
+                User? findUserEmail = await _userManager.FindByEmailAsync(clientRegisterDTO.Email);
+                if (findUserEmail is null)
+                {
+                    //if (cUAccountDTO.ImageData is not null)
+                    //{
+                    //    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(cUAccountDTO.ImageData.FileName);
+                    //    if (!Directory.Exists(cUAccountDTO.ImagePath))
+                    //    {
+                    //        //Directory.CreateDirectory(cUAccountDTO.ImagePath);
+                    //    }
+                    //    string filePath = Path.Combine(cUAccountDTO.ImagePath, uniqueFileName);
+                    //    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    //    {
+                    //        await cUAccountDTO.ImageData.CopyToAsync(fileStream);
+                    //    }
+                    //    cUAccountDTO.ImagePath = Path.Combine("/Images/Accounts/", uniqueFileName);
+                    //}
+                    var linkWithToken = $"https://localhost:7199/api/auth/verify-email?token={GenerateRegistrationToken(clientRegisterDTO, role)}";
+                    await _emailService.SendEmailAsync(
+                        clientRegisterDTO.Email,
+                        "Email Verification",
+                        $"Hi, Welcome To our handmade website, Please click the link below to activate your account\n{linkWithToken}\nPlease note that this link is valid for 10 minutes only.\nThanks For Your Interest"
+                    );
+                    result.IsSuccess = true;
+                    result.Msg = $"A verification link has been sent to your email ({clientRegisterDTO.Email}). Please check your email to activate your account.";
+                    result.Data = $"A verification link has been sent to your email ({clientRegisterDTO.Email}). Please check your email to activate your account.";
+                    //User mappedUser = clientRegisterDTO.Adapt<User>();
+                    //mappedUser.NormalizedEmail = clientRegisterDTO.Email.ToUpper();
+                    //mappedUser.UserName = clientRegisterDTO.Email.Split("@")[0];
+                    //mappedUser.NormalizedUserName = mappedUser.UserName.ToUpper();
+                    //IdentityResult? userToCreate = await _userManager.CreateAsync(user: mappedUser, password: clientRegisterDTO.Password);
+                    //if (userToCreate.Succeeded)
+                    //{
+                    //    User? createdUser = _userManager.Users.FirstOrDefault(u => u.Email == mappedUser.Email);
+                    //    IdentityResult roleToAdd = await _userManager.AddToRoleAsync(createdUser, "Client");
+                    //    if (roleToAdd.Succeeded)
+                    //    {
+                    //        resultView.IsSuccess = true;
+                    //        resultView.Data = null;
+                    //        resultView.Msg = $"Account ({clientRegisterDTO.Email}) Created Successfully, and verification link was sent to your email";
+                    //    }
+                    //    else
+                    //    {
+                    //        resultView.Msg = $"Account ({clientRegisterDTO.Email}) Not Created Because ({roleToAdd.Errors})";
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    resultView.Msg = $"Account ({clientRegisterDTO.Email}) Not Created Because ({userToCreate.Errors})";
+                    //}
+                }
+                else
+                {
+                    result.Msg = $"This Email ({findUserEmail.Email}) Already Exists, Please Login";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Msg = $"Error Occured While Registering ({clientRegisterDTO.Email}), {ex.Message}";
+            }
+            return result;
+        }
+
+        public async Task<ResultView<LoginResultDTO>> CreateUserAsync(string token)
+        {
+            ResultView<LoginResultDTO> result = new();
+            try
+            {
+                ResultView<VerifyRegisterTokenDTO> tokenVerificationResult = VerifyRegisterationToken(token);
+                if (!tokenVerificationResult.IsSuccess)
+                {
+                    result.Msg = tokenVerificationResult.Msg;
+                    return result;
+                }
+                VerifyRegisterTokenDTO verifyRegisterTokenDTO = tokenVerificationResult.Data!;
+                User mappedUser = verifyRegisterTokenDTO.Adapt<User>();
+                var userCreateResult = await _userManager.CreateAsync(mappedUser, verifyRegisterTokenDTO.Password);
+                if (userCreateResult.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(mappedUser, verifyRegisterTokenDTO.Role.ToUpper());
+                    User? newUser = await _userManager.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(u => u.Email == verifyRegisterTokenDTO.Email);
+                    if (newUser == null || !await _userManager.CheckPasswordAsync(newUser, verifyRegisterTokenDTO.Password))
+                    {
+                        result.Msg = "Invalid Credentials";
+                        return result;
+                    }
+                    result.Msg = "Account successfully verified and created.";
+                    LoginResultDTO loginResultDTO = new()
+                    {
+                        AccessToken = GenerateLoginToken(newUser.Id.ToString(), verifyRegisterTokenDTO.Email, mappedUser.UserName!, verifyRegisterTokenDTO.Role).Data!,
+                        User = new()
+                        {
+                            Id = newUser.Id,
+                            Email = verifyRegisterTokenDTO.Email,
+                            FirstName = verifyRegisterTokenDTO.FirstName,
+                            LastName = verifyRegisterTokenDTO.LastName
+                        }
+                    };
+                    result.Data = loginResultDTO;
+                    result.IsSuccess = true;
+                    return result;
+                }
+                StringBuilder errorsStr = new();
+                foreach (var err in userCreateResult.Errors)
+                {
+                    errorsStr.Append($"{err.Description} & ");
+                }
+                result.Msg = $"Failed to create user account. Because {string.Join("",errorsStr.ToString().SkipLast(3))}";
+            }
+            catch (SecurityTokenException)
+            {
+                result.Msg = "Invalid or expired token.";
+            }
+            return result;
+        }
+
 
         //public Task<ResultView<GetAllAdminsDTO>> GetUserById(string id)
         //{
@@ -101,7 +225,7 @@ namespace Handmade.Application.Services.AuthServices
             ResultView<LoginResultDTO> result = new();
             try
             {
-                User? lookupUser = await _userManager.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Email == accountLoginDTO.Email);
+                User? lookupUser = await _userManager.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(u => u.Email == accountLoginDTO.Email);
                 if (lookupUser == null || !await _userManager.CheckPasswordAsync(lookupUser, accountLoginDTO.Password))
                 {
                     result.Msg = "Invalid Credentials";
@@ -109,33 +233,19 @@ namespace Handmade.Application.Services.AuthServices
                 }
                 List<IdentityRole<int>> allRoles = GetRoles();
                 var clientRoleNames = new HashSet<string> { "BUYER", "SELLER" };
-                var isMod = lookupUser.Roles?.Any(ur => !clientRoleNames.Contains(ur.Role.NormalizedName)) ?? false;
+                var isMod = lookupUser.UserRoles?.Any(ur => !clientRoleNames.Contains(ur.Role.NormalizedName)) ?? false;
                 if (!isMod)
                 {
                     _logger.LogInformation("Access Denied: {FirstName} {LastName} is not a moderator", lookupUser.FirstName, lookupUser.LastName ?? "");
                     result.Msg = $"Access Denied: {lookupUser.FirstName} {lookupUser.LastName ?? ""} is not a moderator";
                     return result;
                 }
-                var roleNames = lookupUser.Roles.Select(r => r.Role.Name).ToList();
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.Name, lookupUser.UserName!),
-                    new(ClaimTypes.Email, lookupUser.Email!),
-                    new(ClaimTypes.PrimarySid, lookupUser.Id.ToString()),
-                    new(ClaimTypes.Role, string.Join(" | ", roleNames))
-                };
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]));
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["jwt:Issuer"],
-                    audience: _configuration["jwt:Audience"],
-                    claims: claims,
-                    expires: DateTime.Now.AddDays(7),
-                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-                );
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+                var roleNames = lookupUser.UserRoles?.Select(r => r?.Role?.Name).ToList();
+                ResultView<string> tokenGenerationResult = GenerateLoginToken(lookupUser.Id.ToString(), lookupUser.Email!, lookupUser.UserName!, string.Join(" | ", roleNames??[""]));
+
                 result.Data = new LoginResultDTO
                 {
-                    AccessToken = tokenString,
+                    AccessToken = tokenGenerationResult.IsSuccess ? tokenGenerationResult.Data! : throw new Exception(tokenGenerationResult.Msg),
                     User = new SmallUserDTO
                     {
                         Id = lookupUser.Id,
@@ -162,39 +272,25 @@ namespace Handmade.Application.Services.AuthServices
             ResultView<LoginResultDTO> result = new();
             try
             {
-                User? lookupUser = await _userManager.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Email == accountLoginDTO.Email);
+                User? lookupUser = await _userManager.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(u => u.Email == accountLoginDTO.Email);
                 if (lookupUser == null || !await _userManager.CheckPasswordAsync(lookupUser, accountLoginDTO.Password))
                 {
                     result.Msg = "Invalid Credentials";
                     return result;
                 }
                 List<IdentityRole<int>> allRoles = GetRoles();
-                var isSeller = lookupUser.Roles?.Any(ur => ur.Role.NormalizedName == "SELLER") ?? false;
+                var isSeller = lookupUser.UserRoles?.Any(ur => ur.Role?.NormalizedName == "SELLER") ?? false;
                 if (!isSeller)
                 {
                     _logger.LogInformation("Access Denied: {FirstName} {LastName} is not a seller", lookupUser.FirstName, lookupUser.LastName ?? "");
                     result.Msg = $"Access Denied: {lookupUser.FirstName} {lookupUser.LastName ?? ""} is not a seller";
                     return result;
                 }
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.Name, lookupUser.UserName!),
-                    new(ClaimTypes.Email, lookupUser.Email!),
-                    new(ClaimTypes.PrimarySid, lookupUser.Id.ToString()),
-                    new(ClaimTypes.Role, "Seller")
-                };
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]));
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["jwt:Issuer"],
-                    audience: _configuration["jwt:Audience"],
-                    claims: claims,
-                    expires: DateTime.Now.AddDays(7),
-                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-                );
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+                ResultView<string> tokenGenerationResult = GenerateLoginToken(lookupUser.Id.ToString(), lookupUser.Email!, lookupUser.UserName!, "Seller");
+
                 result.Data = new LoginResultDTO
                 {
-                    AccessToken = tokenString,
+                    AccessToken = tokenGenerationResult.IsSuccess ? tokenGenerationResult.Data! : throw new Exception(tokenGenerationResult.Msg),
                     User = new SmallUserDTO
                     {
                         Id = lookupUser.Id,
@@ -216,44 +312,30 @@ namespace Handmade.Application.Services.AuthServices
         }
 
         // For Clients
-        public async Task<ResultView<LoginResultDTO>> ClientLoginAsync(UserLoginDTO accountLoginDTO)
+        public async Task<ResultView<LoginResultDTO>> BuyerLoginAsync(UserLoginDTO accountLoginDTO)
         {
             ResultView<LoginResultDTO> result = new();
             try
             {
-                User? lookupUser = await _userManager.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Email == accountLoginDTO.Email);
+                User? lookupUser = await _userManager.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(u => u.Email == accountLoginDTO.Email);
                 if (lookupUser == null || !await _userManager.CheckPasswordAsync(lookupUser, accountLoginDTO.Password))
                 {
                     result.Msg = "Invalid Credentials";
                     return result;
                 }
                 List<IdentityRole<int>> allRoles = GetRoles();
-                var isBuyer = lookupUser.Roles?.Any(ur => ur.Role.NormalizedName == "BUYER") ?? false;
+                var isBuyer = lookupUser.UserRoles?.Any(ur => ur.Role.NormalizedName == "BUYER") ?? false;
                 if (!isBuyer)
                 {
                     _logger.LogInformation("Access Denied: {FirstName} {LastName} is not a buyer", lookupUser.FirstName, lookupUser.LastName ?? "");
                     result.Msg = $"Access Denied: {lookupUser.FirstName} {lookupUser.LastName ?? ""} is not a buyer";
                     return result;
                 }
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.Name, lookupUser.UserName!),
-                    new(ClaimTypes.Email, lookupUser.Email!),
-                    new(ClaimTypes.PrimarySid, lookupUser.Id.ToString()),
-                    new(ClaimTypes.Role, "Buyer")
-                };
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]));
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["jwt:Issuer"],
-                    audience: _configuration["jwt:Audience"],
-                    claims: claims,
-                    expires: DateTime.Now.AddDays(7),
-                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-                );
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+                ResultView<string> tokenGenerationResult = GenerateLoginToken(lookupUser.Id.ToString(), lookupUser.Email!, lookupUser.UserName!, "Buyer");
+                
                 result.Data = new LoginResultDTO
                 {
-                    AccessToken = tokenString,
+                    AccessToken = tokenGenerationResult.IsSuccess ? tokenGenerationResult.Data! : throw new Exception(tokenGenerationResult.Msg),
                     User = new SmallUserDTO
                     {
                         Id = lookupUser.Id,
@@ -394,70 +476,114 @@ namespace Handmade.Application.Services.AuthServices
         //}
 
         // For Client
-        public async Task<ResultView<ClientRegisterDTO>> ClientRegisterAsync(ClientRegisterDTO clientRegisterDTO)
-        {
-            ResultView<ClientRegisterDTO> resultView = new();
-            try
-            {
-                    await _emailService.SendEmailAsync(clientRegisterDTO.Email, "Email Verification", $"Hi {clientRegisterDTO.FirstName}, Welcome To our handmade website, Here is your account activation link\nwww.youtube.com\nThanks For Your Support");
-                User? findUserEmail = await _userManager.FindByEmailAsync(clientRegisterDTO.Email);
-                if (findUserEmail is null)
-                {
-                    await _emailService.SendEmailAsync(clientRegisterDTO.Email, "Email Verification", "Hi, Welcome To our handmade website, Here is your account activation link\nwww.youtube.com\nThanks For Your Support");
-                    //if (cUAccountDTO.ImageData is not null)
-                    //{
-                    //    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(cUAccountDTO.ImageData.FileName);
-                    //    if (!Directory.Exists(cUAccountDTO.ImagePath))
-                    //    {
-                    //        //Directory.CreateDirectory(cUAccountDTO.ImagePath);
-                    //    }
-                    //    string filePath = Path.Combine(cUAccountDTO.ImagePath, uniqueFileName);
-                    //    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    //    {
-                    //        await cUAccountDTO.ImageData.CopyToAsync(fileStream);
-                    //    }
-                    //    cUAccountDTO.ImagePath = Path.Combine("/Images/Accounts/", uniqueFileName);
-                    //}
-                    //User mappedUser = _mapper.Map<User>(clientRegisterDTO); // here we should map using constructor or extension methods mapping
-                    //mappedUser.NormalizedEmail = clientRegisterDTO.Email.ToUpper();
-                    //mappedUser.UserName = clientRegisterDTO.Email.Split("@")[0];
-                    //mappedUser.NormalizedUserName = mappedUser.UserName.ToUpper();
-                    //IdentityResult? userToCreate = await _userManager.CreateAsync(user: mappedUser, password: clientRegisterDTO.Password);
-                    //if (userToCreate.Succeeded)
-                    //{
-                    //    User? createdUser = _userManager.Users.FirstOrDefault(u => u.Email == mappedUser.Email);
-                    //    IdentityResult roleToAdd = await _userManager.AddToRoleAsync(createdUser, "Client");
-                    //    if (roleToAdd.Succeeded)
-                    //    {
-                    //        resultView.IsSuccess = true;
-                    //        resultView.Data = _mapper.Map<ClientRegisterDTO>(createdUser); // here we should map using constructor or extension methods mapping
-                    //        resultView.Msg = $"Account ({clientRegisterDTO.Email}) Created Successfully";
-                    //    }
-                    //    else
-                    //    {
-                    //        resultView.Msg = $"Account ({clientRegisterDTO.Email}) Not Created Because ({roleToAdd.Errors})";
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    resultView.Msg = $"Account ({clientRegisterDTO.Email}) Not Created Because ({userToCreate.Errors})";
-                    //}
-                }
-                else
-                {
-                    resultView.Msg = $"This Email ({findUserEmail.Email}) Already Exists, Please Login";
-                }
-            }
-            catch (Exception ex)
-            {
-                resultView.Msg = $"Error Occured While Registering ({clientRegisterDTO.Email}), {ex.Message}";
-            }
-            return resultView;
-        }
-
+        
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
+        }
+
+        public string GenerateRegistrationToken(ClientRegisterDTO clientRegisterDTO, string role)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.GivenName, clientRegisterDTO.FirstName),
+                new Claim(ClaimTypes.Surname, clientRegisterDTO.LastName ?? string.Empty),
+                new Claim(ClaimTypes.Email, clientRegisterDTO.Email),
+                new Claim("Password", clientRegisterDTO.Password), // Store password as a custom claim
+                new Claim(ClaimTypes.Role, role) // Store role as a custom claim
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:RegisterationTokenKey"])); // Use a secure key
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["jwt:Issuer"],
+                audience: _configuration["jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(10), // Token expires in 10 minutes
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public ResultView<VerifyRegisterTokenDTO> VerifyRegisterationToken(string token)
+        {
+            ResultView<VerifyRegisterTokenDTO> result = new();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["jwt:RegisterationTokenKey"]);
+            try
+            {
+                // Validate and decode the token
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = _configuration["jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = _configuration["jwt:Audience"],
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                }, out var validatedToken);
+
+                // Extract claims
+                var firstName = principal.FindFirst(ClaimTypes.GivenName)?.Value;
+                var lastName = principal.FindFirst(ClaimTypes.Surname)?.Value;
+                var email = principal.FindFirst(ClaimTypes.Email)?.Value;
+                var role = principal.FindFirst(ClaimTypes.Role)?.Value;
+                var password = principal.FindFirst("Password")?.Value;
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(firstName))
+                {
+                    return result;
+                }
+                result.Data = new VerifyRegisterTokenDTO()
+                {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    Password = password,
+                    Role = role
+                };
+                result.IsSuccess = true;
+                return result;
+            }
+            catch (SecurityTokenException)
+            {
+                result.Msg = "Invalid or expired token.";
+                return result;
+            }
+        }
+
+        public ResultView<string> GenerateLoginToken(string id, string email, string username, string role)
+        {
+            ResultView<string> result = new();
+            try
+            {
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.Name, username),
+                    new(ClaimTypes.Email, email),
+                    new(ClaimTypes.PrimarySid, id),
+                    new(ClaimTypes.Role, role)
+                };
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]));
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["jwt:Issuer"],
+                    audience: _configuration["jwt:Audience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddDays(7),
+                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+                );
+                result.Data = new JwtSecurityTokenHandler().WriteToken(token);
+                result.IsSuccess = true;
+            }
+            catch(Exception ex)
+            {
+                result.Msg = $"Unexpected error occured while generating token, {ex.Message}";
+            }
+            return result;
         }
 
         //public async Task<ResultView<ClientDetailsDTO>> GetClientDetails(int userId)

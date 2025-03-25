@@ -10,6 +10,6 @@ namespace Handmade.Models
     public class UserRole : IdentityUserRole<int>
     {
         public IdentityRole<int>? Role { get; set; }
-        public User User { get; set; }
+        public User? User { get; set; }
     }
 }

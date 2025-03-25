@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Handmade.DTOs.UserDTOs
+namespace Handmade.DTOs.AuthDTOs
 {
     public class SmallUserDTO
     {

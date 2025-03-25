@@ -6,26 +6,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Handmade.DTOs.UserDTOs
+namespace Handmade.DTOs.AuthDTOs
 {
     public class ClientRegisterDTO
     {
+        [MaxLength(20)]
         [Required(ErrorMessage = "First Name is required.")]
-        public string FirstName { get; set; }
+        public required string FirstName { get; set; }
 
-        [Required(ErrorMessage = "Last Name is required.")]
-        public string LastName { get; set; }
+        [MaxLength(20)]
+        //[Required(ErrorMessage = "Last Name is required.")]
+        public string? LastName { get; set; }
 
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         [Required(ErrorMessage = "Password is required.")]
         [PasswordValidation]
-        public string Password { get; set; }
+        public required string Password { get; set; }
 
         [Required(ErrorMessage = "Confirm Password is required.")]
         [ConfirmPasswordValidation(nameof(Password))]
-        public string ConfirmPassword { get; set; }
+        public required string ConfirmPassword { get; set; }
     }
 }
