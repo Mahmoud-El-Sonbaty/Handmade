@@ -24,6 +24,7 @@
     <ProjectReference Include="..\Handmade.Application\Handmade.Application.csproj" />
     <ProjectReference Include="..\Handmade.Context\Handmade.Context.csproj" />
     <ProjectReference Include="..\Handmade.DTOs\Handmade.DTOs.csproj" />
+    <ProjectReference Include="..\Handmade.Infrastructure\Handmade.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
