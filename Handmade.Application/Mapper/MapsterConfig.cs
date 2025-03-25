@@ -1,4 +1,5 @@
 ﻿using Handmade.DTOs.AuthDTOs;
+using Handmade.DTOs.UserNotifications;
 using Handmade.Models;
 using Mapster;
 using System;
@@ -21,6 +22,10 @@ namespace Handmade.Application.Mapper
                 .Map(dest => dest.NormalizedEmail, src => src.Email.ToUpper())
                 .Map(dest => dest.UserName, src => src.Email.Split('@', StringSplitOptions.None).FirstOrDefault())
                 .Map(dest => dest.NormalizedUserName, src => src.Email.Split('@', StringSplitOptions.None).FirstOrDefault()!.ToUpper());
+
+            TypeAdapterConfig<UserNotification, GetUserNotificationsDTO>.NewConfig()
+                .Map(dest => dest.NotificationId, src => src.Id)
+                .Map(dest => dest.IsRead, src => src.IsDeleted);
             //TypeAdapterConfig<GCUProductReviewDTO, ProductReview>.NewConfig().TwoWays();
             //    TypeAdapterConfig<GetAllProductsDTOs, Product>.NewConfig().TwoWays();
             //    TypeAdapterConfig<GetOneProductDTOs, Product>.NewConfig().TwoWays();
