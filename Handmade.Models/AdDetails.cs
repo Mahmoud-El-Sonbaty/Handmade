@@ -17,5 +17,7 @@ namespace Handmade.Models
 
         [MaxLength(1000)]
         public string? ImageUrl { get; set; }
+        public DateTime? Start { get; set; }
+        public DateTime? End { get; set; }
     }
 }
