@@ -40,6 +40,7 @@ namespace Handmade.ClientWebsiteAPI
             builder.Services.AddScoped<IUserNotificationService, UserNotificationService>();
             builder.Services.AddScoped<IUserDisputesRepository, UserDisputesRepository>();
             builder.Services.AddScoped<IAdDetailsRepository, AdDetailsRepository>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             // Add services to the container.
 
             builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
