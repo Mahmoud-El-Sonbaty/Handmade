@@ -7,17 +7,15 @@ using System.Threading.Tasks;
 
 namespace Handmade.Models
 {
-    public class UserDisputes : BaseEntity<int>
+    public class AdDetails : BaseEntity<int>
     {
-        public int UserId { get; set; }
-        public User? User { get; set; }
-        public int OrderId { get; set; }
-        //public Order Order { get; set; }
+        [MaxLength(100)]
+        public string? Title { get; set; }
 
         [MaxLength(600)]
         public string? Description { get; set; }
 
-        [MaxLength(100)]
-        public string? Status { get; set; }
+        [MaxLength(1000)]
+        public string? ImageUrl { get; set; }
     }
 }
