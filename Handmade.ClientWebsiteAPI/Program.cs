@@ -4,6 +4,7 @@ using Handmade.Application.Services.AuthServices;
 using Handmade.Application.Services.CloudinaryServices;
 using Handmade.Application.Services.EmailServices;
 using Handmade.Application.Services.UserNotificationServices;
+using Handmade.ClientWebsiteAPI.Middleware;
 using Handmade.Context;
 using Handmade.Infrastructure;
 using Handmade.Models;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using Serilog;
 using System.Text;
 
 namespace Handmade.ClientWebsiteAPI
@@ -23,7 +25,7 @@ namespace Handmade.ClientWebsiteAPI
             var builder = WebApplication.CreateBuilder(args);
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<HandmadeContext>(op => 
+            builder.Services.AddDbContext<HandmadeContext>(op =>
             op.UseNpgsql(connectionString));
             //builder.Services.AddMapster();
             // Configure Mapster
@@ -41,6 +43,7 @@ namespace Handmade.ClientWebsiteAPI
             builder.Services.AddScoped<IUserDisputesRepository, UserDisputesRepository>();
             builder.Services.AddScoped<IAdDetailsRepository, AdDetailsRepository>();
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+          
             // Add services to the container.
 
             builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
@@ -57,6 +60,10 @@ namespace Handmade.ClientWebsiteAPI
             .AddEntityFrameworkStores<HandmadeContext>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+            builder.Services.AddSerilog();
+
             builder.Services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConsole();
@@ -107,6 +114,12 @@ namespace Handmade.ClientWebsiteAPI
             }
             app.UseHttpsRedirection();
             app.UseCors("Default");
+
+
+            app.UseMiddleware<TrackingMiddleware>();
+
+
+
             app.UseAuthentication();
             app.UseAuthorization();
 
