@@ -1,9 +1,12 @@
+using Handmade.Application.Contracts;
 using Handmade.Application.Mapper;
 using Handmade.Application.Services.AuthServices;
 using Handmade.Application.Services.CloudinaryServices;
 using Handmade.Application.Services.EmailServices;
+using Handmade.Application.Services.UserNotificationServices;
 using Handmade.ClientWebsiteAPI.Middleware;
 using Handmade.Context;
+using Handmade.Infrastructure;
 using Handmade.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -34,6 +37,9 @@ namespace Handmade.ClientWebsiteAPI
             builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
             builder.Services.AddTransient<IEmailService, EmailService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IUserCouponRepository, UserCouponRepository>();
+            builder.Services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
+            builder.Services.AddScoped<IUserNotificationService, UserNotificationService>();
             // Add services to the container.
 
             builder.Services.AddIdentity<User, IdentityRole<int>>(options =>

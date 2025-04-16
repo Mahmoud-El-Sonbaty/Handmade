@@ -8,8 +8,10 @@ namespace Handmade.Context
 {
     public class HandmadeContext(DbContextOptions<HandmadeContext> options) : IdentityDbContext<User, IdentityRole<int>, int>(options)
     {
-        public DbSet<User> Users { get; set; }
+        public override DbSet<User> Users { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<UserCoupon> UserCoupons { get; set; }
+        public DbSet<UserNotification> UserNotifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
