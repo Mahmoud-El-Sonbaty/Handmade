@@ -14,6 +14,7 @@ namespace Handmade.Context
         public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<UserDisputes> UserDisputes { get; set; }
         public DbSet<AdDetails> AdsDetails { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

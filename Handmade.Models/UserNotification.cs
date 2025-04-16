@@ -11,7 +11,7 @@ namespace Handmade.Models
     {
         public int UserId { get; set; }
         public User? User { get; set; }
-
+        
         [MaxLength(256)]
         public string? Message { get; set; }
     }
