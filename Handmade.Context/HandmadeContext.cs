@@ -12,6 +12,7 @@ namespace Handmade.Context
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<UserCoupon> UserCoupons { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
+        public DbSet<UserDisputes> UserDisputes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
