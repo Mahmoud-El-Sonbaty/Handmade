@@ -13,8 +13,11 @@ namespace Handmade.Models
         public User? User { get; set; }
         public int OrderId { get; set; }
         //public Order Order { get; set; }
+
         [MaxLength(600)]
         public string? Description { get; set; }
+
+        [MaxLength(100)]
         public string? Status { get; set; }
     }
 }
